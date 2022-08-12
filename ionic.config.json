@@ -1,0 +1,7 @@
+{
+  "name": "fullkhellov",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
