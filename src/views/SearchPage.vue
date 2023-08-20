@@ -1,69 +1,30 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar class="bgcolord">
-        <ion-thumbnail class="ion-margin-start">
-          <ion-img :src="sitelogo" style="width:120px;height:50px;"></ion-img>
-        </ion-thumbnail>
-        <ion-label class="app-title-cls">
-          <h2>
-            Open with an app
-          </h2>
-        </ion-label>
-        <button class="ion-float-right cut-dbtn">
-          <ion-thumbnail>
-            <ion-img :src="download" style="width:30px;height:22px;"></ion-img>
-          </ion-thumbnail>
-        </button>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-slides :options="slideOpts">
-        <ion-slide>
-          <ion-img :src="slide1" style="width:1200px;height:500px;"></ion-img>
-        </ion-slide>
-        <ion-slide>
-          <ion-img :src="slide2" style="width:1200px;height:500px;"></ion-img>
-        </ion-slide>
-        <ion-slide>
-          <ion-img :src="slide3" style="width:1200px;height:500px;"></ion-img>
-        </ion-slide>
-        <ion-slide>
-          <ion-img :src="slide3" style="width:1200px;height:500px;"></ion-img>
-        </ion-slide>
-        <ion-slide>
-          <ion-img :src="slide2" style="width:1200px;height:500px;"></ion-img>
-        </ion-slide>
-      </ion-slides>
       <ion-grid>
         <ion-row>
           <ion-col>
+            <div class="input_box">
+              <!-- Input with value -->
+              <ion-input type="text" @input="searchProduct" placeholder="Search for good"></ion-input>
+            </div>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col :if="isValue"  v-for="value in products" :key="value.productPrice">
             <div class="product-card">
               <div class="product-image">
-                <ion-img :src="slide1" class="pimg"></ion-img>
+                <ion-img :src="`/assets/products/${value.productImage}`"   class="pimg"></ion-img>
                 <ion-label class="prd-label">
-                  <h4>Guchi</h4>
+                  <h4>{{ value.productName }}</h4>
                 </ion-label>
               </div>
               <div class="product-content">
-                <p>$5000</p>
+                <p class="ion-text-red">₹{{ value.productPrice }}</p>
               </div>
             </div>
           </ion-col>
-          <ion-col>
-            <div class="product-card">
-              <div class="product-image">
-                <ion-img :src="slide2" class="pimg"></ion-img>
-                <ion-label class="prd-label">
-                  <h4>Guchi</h4>
-                </ion-label>
-              </div>
-              <div class="product-content">
-                <p>$5000</p>
-              </div>
-            </div>
-          </ion-col>
+         
         </ion-row>
       </ion-grid>
     </ion-content>
@@ -73,72 +34,72 @@
     </ion-footer>
   </ion-page>
 </template>
-<script lang="ts">
-import { IonContent, IonHeader, IonFooter, IonPage, IonToolbar, IonThumbnail, IonImg, IonLabel, IonGrid, IonRow, IonCol, IonSlides, IonSlide } from '@ionic/vue';
-import { defineComponent, computed } from 'vue';
-import FooterPage from './include/FooterPage.vue';
 
+<script lang="ts">
+import axios from "axios";
+import { IonContent, IonPage, IonImg, IonLabel, IonGrid, IonRow, IonCol } from '@ionic/vue';
+import { defineComponent, computed } from 'vue';
+import FooterPage from './include/FooterPage.vue'
+import { useRouter } from "vue-router";
 export default defineComponent({
-  name: 'HomePage',
+  name: 'SearchPage',
   components: {
-    IonThumbnail,
+    IonContent,
+    IonPage,
+    FooterPage,
     IonImg,
     IonLabel,
-    IonContent,
-    IonHeader,
-    IonFooter,
-    IonPage,
-    IonToolbar,
-    FooterPage,
-    IonSlides, IonSlide,
-    IonCol, IonGrid, IonRow
+    IonGrid,
+    IonRow,
+    IonCol
   },
   setup() {
-    const sitelogo = computed(() => '/assets/images/crlogo.png')
-    const download = computed(() => '/assets/images/download.png')
+    const router = useRouter();
     const slide1 = computed(() => '/assets/slider/slider1.webp')
     const slide2 = computed(() => '/assets/slider/slider2.jpg')
     const slide3 = computed(() => '/assets/slider/slider3.jpg')
-    const slideOpts = {
-      initialSlide: 0,
-      spaceBetween: 50,
-      speed: 3000,
-      autoplay: true,
-      loop: true,
-      slidesPerView: 1,
-      loopedSlidesLimit: 3,
-      preloadImages: true
-    }
     return {
-      slideOpts,
-      sitelogo,
-      download,
       slide1,
       slide2,
       slide3,
+      router
     }
   },
   data() {
     return {
-      user: 'test',
+      products: [{"productName":'',"productImage":'',"productPrice":0}],
+      isValue:false
+    }
+  },
+  mounted() {
+    this.getProduct()
+  },
+  methods: {
+    async getProduct() {
+      await axios
+        .get("http://localhost:5000/getProduct")
+        .then((res) => (this.products = res.data.data));
+    },
+    async searchProduct($event:any){
+      let searchm = $event.target.value
+      this.products = [{"productName":'',"productImage":'',"productPrice":0}]
+      await axios
+        .post("http://localhost:5000/searchProduct",{"searnm":searchm})
+        .then(function(this:any,res:any){
+          if(res.data.length > 0){
+            this.products = res.data
+            this.isValue = true;
+          }
+        }.bind(this));
     }
   },
 });
-
-
 </script>
 
 <style scoped>
-.app-title-cls {
-  position: relative;
-  display: inline-flex;
-  left: 250px;
-  bottom: 35px;
-  color: #4c4545;
-}
-
 #container {
   text-align: center;
+
   position: absolute;
   left: 0;
   right: 0;
@@ -154,7 +115,9 @@ export default defineComponent({
 #container p {
   font-size: 16px;
   line-height: 22px;
+
   color: #8c8c8c;
+
   margin: 0;
 }
 
@@ -162,28 +125,15 @@ export default defineComponent({
   text-decoration: none;
 }
 
-.bgcolord {
-  --background: #eeeeee;
-  height: 50px;
-}
-
-.ripple-parent {
-  position: relative;
-  overflow: hidden;
-}
-
-ion-header {
-  height: 50px;
-}
-
-.cut-dbtn {
-  position: relative;
-  bottom: 30px;
-}
-
 .product-card {
-  border: 2px solid gray;
-  padding: 30px;
+  background-color: #fff;
+  border-color: #fff;
+  color: rgba(0, 0, 0, .87);
+  transition: .3s cubic-bezier(.25, .8, .5, 1);
+  box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px 0 rgb(0 0 0 / 14%), 0 1px 5px 0 rgb(0 0 0 / 12%);
+  border-radius: 2px;
+  padding: 10px;
+  overflow: hidden;
 }
 
 .product-image .pimg {
@@ -196,10 +146,15 @@ ion-header {
 
 .prd-label {
   text-align: center;
+
 }
 
 .prd-label h4 {
-  font-size: 24px;
+  font-size: 18px;
+}
+
+.ion-text-red {
+  color: #f39839;
 }
 
 /* Smartphones (portrait and landscape) ----------- */

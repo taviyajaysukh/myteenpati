@@ -1,7 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
-
+import Vue3EasyDataTable from 'vue3-easy-data-table';
+import 'vue3-easy-data-table/dist/style.css';
 import { IonicVue } from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
@@ -30,3 +31,4 @@ const app = createApp(App)
 router.isReady().then(() => {
   app.mount('#app');
 });
+app.component('EasyDataTable', Vue3EasyDataTable);
